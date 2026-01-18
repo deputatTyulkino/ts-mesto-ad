@@ -26,12 +26,20 @@ import { enableValidation, clearValidation } from "./utils/validation.ts";
 import {
   ModalDescriptionContent,
   ModalContent,
-} from "./helpers/modal_content.ts"
+} from "./helpers/modal_content.ts";
 import { ButtonText } from "./constants/button_text.ts";
 
 import { CardInfo } from "./constants/card_info.ts";
 
-import { isAxiosError } from "axios";
+import { AxiosError, isAxiosError } from "axios";
+import type {
+  THandleAvatarFormSubmit,
+  THandleCardFormSubmit,
+  THandlePreviewPicture,
+  THandleProfileFormSubmit,
+  TShowInfoCard,
+} from "./index.types.ts";
+import type { TCard, TUser } from "./api.response.types.ts";
 
 // Создание объекта с настройками валидации
 const validationSettings = {
@@ -48,106 +56,154 @@ const validationSettings = {
 enableValidation(validationSettings);
 
 // DOM узлы
-const placesWrap = document.querySelector(".places__list");
-const profileFormModalWindow = document.querySelector(".popup_type_edit");
-const profileForm = profileFormModalWindow.querySelector(".popup__form");
-const profileTitleInput = profileForm.querySelector(".popup__input_type_name");
+const placesWrap = document.querySelector(".places__list") as HTMLUListElement;
+const profileFormModalWindow = document.querySelector(
+  ".popup_type_edit",
+) as HTMLDivElement;
+const profileForm = profileFormModalWindow.querySelector(
+  ".popup__form",
+) as HTMLFormElement;
+const profileTitleInput = profileForm.querySelector(
+  ".popup__input_type_name",
+) as HTMLInputElement;
 const profileDescriptionInput = profileForm.querySelector(
   ".popup__input_type_description",
-);
-const profileEditButton =
-  profileFormModalWindow.querySelector(".popup__button");
+) as HTMLInputElement;
+const profileEditButton = profileFormModalWindow.querySelector(
+  ".popup__button",
+) as HTMLButtonElement;
 
-const cardFormModalWindow = document.querySelector(".popup_type_new-card");
-const cardForm = cardFormModalWindow.querySelector(".popup__form");
-const cardButton = cardFormModalWindow.querySelector(".popup__button");
+const cardFormModalWindow = document.querySelector(
+  ".popup_type_new-card",
+) as HTMLDivElement;
+const cardForm = cardFormModalWindow.querySelector(
+  ".popup__form",
+) as HTMLFormElement;
+const cardButton = cardFormModalWindow.querySelector(
+  ".popup__button",
+) as HTMLButtonElement;
 
-const imageModalWindow = document.querySelector(".popup_type_image");
-const imageElement = imageModalWindow.querySelector(".popup__image");
-const imageCaption = imageModalWindow.querySelector(".popup__caption");
+const imageModalWindow = document.querySelector(
+  ".popup_type_image",
+) as HTMLDivElement;
+const imageElement = imageModalWindow.querySelector(
+  ".popup__image",
+) as HTMLImageElement;
+const imageCaption = imageModalWindow.querySelector(
+  ".popup__caption",
+) as HTMLParagraphElement;
 
-const openProfileFormButton = document.querySelector(".profile__edit-button");
-const openCardFormButton = document.querySelector(".profile__add-button");
+const openProfileFormButton = document.querySelector(
+  ".profile__edit-button",
+) as HTMLButtonElement;
+const openCardFormButton = document.querySelector(
+  ".profile__add-button",
+) as HTMLButtonElement;
 
-const profileTitle = document.querySelector(".profile__title");
-const profileDescription = document.querySelector(".profile__description");
-const profileAvatar = document.querySelector(".profile__image");
+const profileTitle = document.querySelector(
+  ".profile__title",
+) as HTMLHeadingElement;
+const profileDescription = document.querySelector(
+  ".profile__description",
+) as HTMLParagraphElement;
+const profileAvatar = document.querySelector(
+  ".profile__image",
+) as HTMLDivElement;
 
-const avatarFormModalWindow = document.querySelector(".popup_type_edit-avatar");
-const avatarForm = avatarFormModalWindow.querySelector(".popup__form");
-const editAvatarButton = avatarFormModalWindow.querySelector(".popup__button");
+const avatarFormModalWindow = document.querySelector(
+  ".popup_type_edit-avatar",
+) as HTMLDivElement;
+const avatarForm = avatarFormModalWindow.querySelector(
+  ".popup__form",
+) as HTMLFormElement;
+const editAvatarButton = avatarFormModalWindow.querySelector(
+  ".popup__button",
+) as HTMLButtonElement;
 
-const cardInfoModalWindow = document.querySelector(".popup_type_info");
-const titleModal = cardInfoModalWindow.querySelector(".popup__title");
-const listInfo = cardInfoModalWindow.querySelector(".popup__info");
-const subtitleModal = cardInfoModalWindow.querySelector(".popup__text");
-const secondaryListInfo = cardInfoModalWindow.querySelector(".popup__list");
+const cardInfoModalWindow = document.querySelector(
+  ".popup_type_info",
+) as HTMLDivElement;
+const titleModal = cardInfoModalWindow.querySelector(
+  ".popup__title",
+) as HTMLHeadingElement;
+const listInfo = cardInfoModalWindow.querySelector(
+  ".popup__info",
+) as HTMLDListElement;
+const subtitleModal = cardInfoModalWindow.querySelector(
+  ".popup__text",
+) as HTMLHeadingElement;
+const secondaryListInfo = cardInfoModalWindow.querySelector(
+  ".popup__list",
+) as HTMLUListElement;
 
-const headerLogo = document.querySelector(".header__logo");
+const headerLogo = document.querySelector(".header__logo") as HTMLImageElement;
 
 const showAllCardsInfo = () => {
   getCardList()
-    .then((cards) => {
-      const description = ModalDescriptionContent.createCardsDescriptionValues(cards)
+    .then((cards: TCard[]) => {
+      const description =
+        ModalDescriptionContent.createCardsDescriptionValues(cards);
       const terms = CardInfo.CARDS_STATISTICS_TERMS;
       if (listInfo.textContent || secondaryListInfo.textContent) {
-        listInfo.textContent = ""
-        secondaryListInfo.textContent = ""
-        titleModal.textContent = ""
-        subtitleModal.textContent = ""
+        listInfo.textContent = "";
+        secondaryListInfo.textContent = "";
+        titleModal.textContent = "";
+        subtitleModal.textContent = "";
       }
-      titleModal.textContent = CardInfo.CARDS_STATISTICS.title
-      subtitleModal.textContent = CardInfo.CARDS_STATISTICS.subtitle
-      ModalContent.appendInfoString(listInfo, terms, description)
-      ModalContent.appendSecInfoString(secondaryListInfo, cards)
-      openModalWindow(cardInfoModalWindow)
+      titleModal.textContent = CardInfo.CARDS_STATISTICS.title;
+      subtitleModal.textContent = CardInfo.CARDS_STATISTICS.subtitle;
+      ModalContent.appendInfoString(listInfo, terms, description);
+      ModalContent.appendSecInfoString(secondaryListInfo, cards);
+      openModalWindow(cardInfoModalWindow);
     })
-    .catch((err) => console.log(err))
-}
+    .catch((err: AxiosError | ErrorEvent) => console.log(err));
+};
 
-const showInfoCard = (cardId) => {
+const showInfoCard: TShowInfoCard = (cardId) => {
   getCardList()
-    .then((cards) => {
+    .then((cards: TCard[]) => {
       const currentCard = cards.find((card) => card._id === cardId);
-      const descriptions = ModalDescriptionContent.createDescriptionValues(currentCard);
+      const descriptions =
+        ModalDescriptionContent.createDescriptionValues(currentCard);
       const terms = CardInfo.INFO_CARD_TERMS;
       if (listInfo.textContent || secondaryListInfo.textContent) {
-        listInfo.textContent = ""
-        secondaryListInfo.textContent = ""
-        titleModal.textContent = ""
-        subtitleModal.textContent = ""
+        listInfo.textContent = "";
+        secondaryListInfo.textContent = "";
+        titleModal.textContent = "";
+        subtitleModal.textContent = "";
       }
       titleModal.textContent = CardInfo.INFO_CARD.title;
       subtitleModal.textContent = CardInfo.INFO_CARD.subtitle;
       ModalContent.appendInfoString(listInfo, terms, descriptions);
-      ModalContent.appendUserLikes(secondaryListInfo, currentCard.likes);
+      ModalContent.appendUserLikes(secondaryListInfo, currentCard?.likes);
       openModalWindow(cardInfoModalWindow);
     })
-    .catch((err) => {
+    .catch((err: AxiosError | ErrorEvent) => {
       console.log(err);
-    })
+    });
 };
 
-const handlePreviewPicture = ({ name, link }) => {
+const handlePreviewPicture: THandlePreviewPicture = ({ name, link }) => {
   imageElement.src = link;
   imageElement.alt = name;
   imageCaption.textContent = name;
   openModalWindow(imageModalWindow);
 };
 
-const handleProfileFormSubmit = (evt) => {
+const handleProfileFormSubmit: THandleProfileFormSubmit = (evt) => {
   evt.preventDefault();
   fetchingButtonState(profileEditButton, ButtonText.FETCH_BUTTON_SAVE_TEXT);
+  const form = evt.target as HTMLFormElement;
   setUserInfo({
-    name: evt.target["user-name"].value,
-    about: evt.target["user-description"].value,
+    name: form["user-name"].value,
+    about: form["user-description"].value,
   })
-    .then((userData) => {
+    .then((userData: TUser) => {
       profileTitle.textContent = userData.name;
       profileDescription.textContent = userData.about;
       closeModalWindow(profileFormModalWindow);
     })
-    .catch((err) => {
+    .catch((err: AxiosError | ErrorEvent) => {
       console.log(err);
     })
     .finally(() => {
@@ -155,16 +211,17 @@ const handleProfileFormSubmit = (evt) => {
     });
 };
 
-const handleAvatarFormSubmit = (evt) => {
+const handleAvatarFormSubmit: THandleAvatarFormSubmit = (evt) => {
   evt.preventDefault();
-  const avatarUrl = evt.target["user-avatar"].value.trim();
+  const form = evt.target as HTMLFormElement;
+  const avatarUrl = form["user-avatar"].value.trim();
   fetchingButtonState(editAvatarButton, ButtonText.FETCH_BUTTON_SAVE_TEXT);
   setAvatar(avatarUrl)
-    .then((userData) => {
+    .then((userData: TUser) => {
       profileAvatar.style.backgroundImage = `url(${userData.avatar})`;
       closeModalWindow(avatarFormModalWindow);
     })
-    .catch((err) => {
+    .catch((err: AxiosError | ErrorEvent) => {
       console.log(err);
     })
     .finally(() => {
@@ -172,21 +229,22 @@ const handleAvatarFormSubmit = (evt) => {
     });
 };
 
-const handleCardFormSubmit = (evt) => {
+const handleCardFormSubmit: THandleCardFormSubmit = (evt) => {
   evt.preventDefault();
-  const name = evt.target["place-name"].value.trim();
-  const link = evt.target["place-link"].value.trim();
+  const form = evt.target as HTMLFormElement;
+  const name = form["place-name"].value.trim();
+  const link = form["place-link"].value.trim();
   fetchingButtonState(cardButton, ButtonText.FETCH_BUTTON_CREATE_TEXT);
   addCard({ name, link })
     .then((card) => {
       const cardElement = createCardElement(card, {
         onPreviewPicture: handlePreviewPicture,
         onShowInfoCard: showInfoCard,
-      })
+      });
       placesWrap.prepend(cardElement);
       closeModalWindow(cardFormModalWindow);
     })
-    .catch((err) => {
+    .catch((err: AxiosError | ErrorEvent) => {
       console.log(err);
     })
     .finally(() => {
@@ -198,7 +256,7 @@ const handleCardFormSubmit = (evt) => {
 profileForm.addEventListener("submit", handleProfileFormSubmit);
 cardForm.addEventListener("submit", handleCardFormSubmit);
 avatarForm.addEventListener("submit", handleAvatarFormSubmit);
-headerLogo.addEventListener('click', showAllCardsInfo)
+headerLogo.addEventListener("click", showAllCardsInfo);
 
 openProfileFormButton.addEventListener("click", () => {
   profileTitleInput.value = profileTitle.textContent;
@@ -220,13 +278,15 @@ openCardFormButton.addEventListener("click", () => {
 });
 
 //настраиваем обработчики закрытия попапов
-const allPopups = document.querySelectorAll(".popup");
+const allPopups = document.querySelectorAll(
+  ".popup",
+) as NodeListOf<HTMLDivElement>;
 allPopups.forEach((popup) => {
   setCloseModalWindowEventListeners(popup);
 });
 
-const setCards = (card) => {
-  card.forEach((card) => {
+const setCards = (cards: TCard[]) => {
+  cards.forEach((card) => {
     placesWrap.append(
       createCardElement(card, {
         onPreviewPicture: handlePreviewPicture,
@@ -236,7 +296,7 @@ const setCards = (card) => {
   });
 };
 
-const setProfile = (data) => {
+const setProfile = (data: TUser) => {
   profileAvatar.style.backgroundImage = `url(${data.avatar})`;
   profileTitle.textContent = data.name;
   profileDescription.textContent = data.about;
@@ -244,12 +304,12 @@ const setProfile = (data) => {
 };
 
 Promise.all([getCardList(), getUserInfo()])
-  .then(([cards, userData]) => {
+  .then(([cards, userData]: [TCard[], TUser]) => {
     setCards(cards);
     setProfile(userData);
   })
   .catch((err) => {
     if (isAxiosError(err)) {
-      console.log(err.message)
-    };
+      console.log(err.message);
+    }
   });
