@@ -31,14 +31,7 @@ import { ButtonText } from "./constants/button_text.ts";
 
 import { CardInfo } from "./constants/card_info.ts";
 
-import { AxiosError, isAxiosError } from "axios";
-import type {
-  THandleAvatarFormSubmit,
-  THandleCardFormSubmit,
-  THandlePreviewPicture,
-  THandleProfileFormSubmit,
-  TShowInfoCard,
-} from "./index.types.ts";
+import { isAxiosError } from "axios";
 import type { TCard, TUser } from "./api.response.types.ts";
 
 // Создание объекта с настройками валидации
@@ -140,7 +133,7 @@ const headerLogo = document.querySelector(".header__logo") as HTMLImageElement;
 
 const showAllCardsInfo = () => {
   getCardList()
-    .then((cards: TCard[]) => {
+    .then((cards) => {
       const description =
         ModalDescriptionContent.createCardsDescriptionValues(cards);
       const terms = CardInfo.CARDS_STATISTICS_TERMS;
@@ -156,12 +149,16 @@ const showAllCardsInfo = () => {
       ModalContent.appendSecInfoString(secondaryListInfo, cards);
       openModalWindow(cardInfoModalWindow);
     })
-    .catch((err: AxiosError | ErrorEvent) => console.log(err));
+    .catch((err) => {
+      if (isAxiosError(err)) {
+        console.log(err.message);
+      }
+    });
 };
 
-const showInfoCard: TShowInfoCard = (cardId) => {
+const showInfoCard = (cardId: TCard["_id"]): void => {
   getCardList()
-    .then((cards: TCard[]) => {
+    .then((cards) => {
       const currentCard = cards.find((card) => card._id === cardId);
       const descriptions =
         ModalDescriptionContent.createDescriptionValues(currentCard);
@@ -178,19 +175,24 @@ const showInfoCard: TShowInfoCard = (cardId) => {
       ModalContent.appendUserLikes(secondaryListInfo, currentCard?.likes);
       openModalWindow(cardInfoModalWindow);
     })
-    .catch((err: AxiosError | ErrorEvent) => {
-      console.log(err);
+    .catch((err) => {
+      if (isAxiosError(err)) {
+        console.log(err.message);
+      }
     });
 };
 
-const handlePreviewPicture: THandlePreviewPicture = ({ name, link }) => {
+const handlePreviewPicture = ({
+  name,
+  link,
+}: Pick<TCard, "name" | "link">): void => {
   imageElement.src = link;
   imageElement.alt = name;
   imageCaption.textContent = name;
   openModalWindow(imageModalWindow);
 };
 
-const handleProfileFormSubmit: THandleProfileFormSubmit = (evt) => {
+const handleProfileFormSubmit = (evt: SubmitEvent): void => {
   evt.preventDefault();
   fetchingButtonState(profileEditButton, ButtonText.FETCH_BUTTON_SAVE_TEXT);
   const form = evt.target as HTMLFormElement;
@@ -198,38 +200,42 @@ const handleProfileFormSubmit: THandleProfileFormSubmit = (evt) => {
     name: form["user-name"].value,
     about: form["user-description"].value,
   })
-    .then((userData: TUser) => {
+    .then((userData) => {
       profileTitle.textContent = userData.name;
       profileDescription.textContent = userData.about;
       closeModalWindow(profileFormModalWindow);
     })
-    .catch((err: AxiosError | ErrorEvent) => {
-      console.log(err);
+    .catch((err) => {
+      if (isAxiosError(err)) {
+        console.log(err.message);
+      }
     })
     .finally(() => {
       resetButtonState(profileEditButton, ButtonText.BUTTON_SAVE_TEXT);
     });
 };
 
-const handleAvatarFormSubmit: THandleAvatarFormSubmit = (evt) => {
+const handleAvatarFormSubmit = (evt: SubmitEvent): void => {
   evt.preventDefault();
   const form = evt.target as HTMLFormElement;
   const avatarUrl = form["user-avatar"].value.trim();
   fetchingButtonState(editAvatarButton, ButtonText.FETCH_BUTTON_SAVE_TEXT);
   setAvatar(avatarUrl)
-    .then((userData: TUser) => {
+    .then((userData) => {
       profileAvatar.style.backgroundImage = `url(${userData.avatar})`;
       closeModalWindow(avatarFormModalWindow);
     })
-    .catch((err: AxiosError | ErrorEvent) => {
-      console.log(err);
+    .catch((err) => {
+      if (isAxiosError(err)) {
+        console.log(err.message);
+      }
     })
     .finally(() => {
       resetButtonState(editAvatarButton, ButtonText.BUTTON_SAVE_TEXT);
     });
 };
 
-const handleCardFormSubmit: THandleCardFormSubmit = (evt) => {
+const handleCardFormSubmit = (evt: SubmitEvent): void => {
   evt.preventDefault();
   const form = evt.target as HTMLFormElement;
   const name = form["place-name"].value.trim();
@@ -244,8 +250,10 @@ const handleCardFormSubmit: THandleCardFormSubmit = (evt) => {
       placesWrap.prepend(cardElement);
       closeModalWindow(cardFormModalWindow);
     })
-    .catch((err: AxiosError | ErrorEvent) => {
-      console.log(err);
+    .catch((err) => {
+      if (isAxiosError(err)) {
+        console.log(err);
+      }
     })
     .finally(() => {
       resetButtonState(cardButton, ButtonText.BUTTON_CREATE_TEXT);
@@ -285,7 +293,7 @@ allPopups.forEach((popup) => {
   setCloseModalWindowEventListeners(popup);
 });
 
-const setCards = (cards: TCard[]) => {
+const setCards = (cards: TCard[]): void => {
   cards.forEach((card) => {
     placesWrap.append(
       createCardElement(card, {
@@ -296,7 +304,7 @@ const setCards = (cards: TCard[]) => {
   });
 };
 
-const setProfile = (data: TUser) => {
+const setProfile = (data: TUser): void => {
   profileAvatar.style.backgroundImage = `url(${data.avatar})`;
   profileTitle.textContent = data.name;
   profileDescription.textContent = data.about;
@@ -304,7 +312,7 @@ const setProfile = (data: TUser) => {
 };
 
 Promise.all([getCardList(), getUserInfo()])
-  .then(([cards, userData]: [TCard[], TUser]) => {
+  .then(([cards, userData]) => {
     setCards(cards);
     setProfile(userData);
   })
