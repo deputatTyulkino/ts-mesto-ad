@@ -1,4 +1,4 @@
-export interface TUser {
+export type TUser = {
   name: string;
   about: string;
   avatar: string;
@@ -6,7 +6,7 @@ export interface TUser {
   cohort: string;
 }
 
-export interface TCard {
+export type TCard = {
   likes: TUser[];
   _id: string;
   name: string;

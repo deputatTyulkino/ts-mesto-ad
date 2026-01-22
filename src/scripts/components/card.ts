@@ -73,7 +73,12 @@ export const createCardElement = (
 
   if (ownerId === data.owner._id) {
     deleteButton.addEventListener("click", () => {
-      openConfirmModalWindow(data._id, cardElement, confirmModalWindow, confirmButton);
+      openConfirmModalWindow(
+        data._id,
+        cardElement,
+        confirmModalWindow,
+        confirmButton,
+      );
     });
   } else {
     deleteButton.style.display = "none";
