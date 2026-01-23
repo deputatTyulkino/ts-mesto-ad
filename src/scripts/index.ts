@@ -33,16 +33,7 @@ import { CardInfo } from "./constants/card_info.ts";
 
 import { isAxiosError } from "axios";
 import type { TCard, TUser } from "./api.response.types.ts";
-
-// Создание объекта с настройками валидации
-const validationSettings = {
-  formSelector: ".popup__form",
-  inputSelector: ".popup__input",
-  submitButtonSelector: ".popup__button",
-  inactiveButtonClass: "popup__button_disabled",
-  inputErrorClass: "popup__input_type_error",
-  errorClass: "popup__error_visible",
-};
+import { validationSettings } from "./constants/global.constants.ts";
 
 // включение валидации вызовом enableValidation
 // все настройки передаются при вызове

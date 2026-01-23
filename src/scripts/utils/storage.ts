@@ -1,6 +1,6 @@
 const ID_OWNER = "id";
 
-export const setIdOwner = (id) => {
+export const setIdOwner = (id: string) => {
   localStorage.setItem(ID_OWNER, id);
 };
 
