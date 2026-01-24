@@ -5,14 +5,19 @@ import { fetchingButtonState, resetButtonState } from "./modal.ts";
 import { getTemplate } from "../helpers/template.ts";
 import { CardInfo } from "../helpers/modal_inf.ts";
 import { ButtonText } from "../constants/button_text.ts";
+import type {
+  TCreateCardElement,
+  TLikeCard,
+  TRemoveCard,
+} from "./types/card.types.ts";
 
-const likeCard = (likeButton, id) => {
+const likeCard: TLikeCard = (likeButton, id) => {
   likeButton.classList.toggle("card__like-button_is-active");
   const isLiked = likeButton.classList.contains("card__like-button_is-active");
   return changeLikeCardStatus(id, isLiked);
 };
 
-export const removeCard = (id, cardElement, confirmButton) => {
+export const removeCard: TRemoveCard = (id, cardElement, confirmButton) => {
   fetchingButtonState(confirmButton, ButtonText.FETCH_BUTTON_REMOVE_TEXT);
   deleteCard(id)
     .then((response) => {
@@ -27,27 +32,39 @@ export const removeCard = (id, cardElement, confirmButton) => {
     });
 };
 
-export const createCardElement = (
+export const createCardElement: TCreateCardElement = (
   data,
   { onPreviewPicture, onShowInfoCard },
 ) => {
-  const confirmModalWindow = document.querySelector(".popup_type_remove-card");
-  const confirmButton = confirmModalWindow.querySelector(".popup__button");
+  const confirmModalWindow = document.querySelector(
+    ".popup_type_remove-card",
+  ) as HTMLDivElement;
+  const confirmButton = confirmModalWindow.querySelector(
+    ".popup__button",
+  ) as HTMLButtonElement;
   const ownerId = getIdOwner();
   const cardElement = getTemplate();
-  const likeButton = cardElement.querySelector(".card__like-button");
+  const likeButton = cardElement.querySelector(
+    ".card__like-button",
+  ) as HTMLButtonElement;
   const deleteButton = cardElement.querySelector(
     ".card__control-button_type_delete",
-  );
+  ) as HTMLButtonElement;
   const infoButton = cardElement.querySelector(
     ".card__control-button_type_info",
-  );
-  const cardImage = cardElement.querySelector(".card__image");
-  const countLike = cardElement.querySelector(".card__like-count");
+  ) as HTMLButtonElement;
+  const cardImage = cardElement.querySelector(
+    ".card__image",
+  ) as HTMLImageElement;
+  const countLike = cardElement.querySelector(
+    ".card__like-count",
+  ) as HTMLParagraphElement;
 
   cardImage.src = data.link;
   cardImage.alt = data.name;
-  cardElement.querySelector(".card__title").textContent = data.name;
+  (
+    cardElement.querySelector(".card__title") as HTMLHeadingElement
+  ).textContent = data.name;
   countLike.textContent = CardInfo.getCountLike(data.likes);
 
   const userLikes = data.likes.map((user) => user._id);
