@@ -32,8 +32,9 @@ import { ButtonText } from "./constants/button_text.ts";
 import { CardInfo } from "./constants/card_info.ts";
 
 import { isAxiosError } from "axios";
-import type { TCard, TUser } from "./api.response.types.ts";
+import type { TCard, TUser } from "./api/api.response.types.ts";
 import { validationSettings } from "./constants/global.constants.ts";
+import type { THandlePreviewPicture, TShowInfoCard } from "./index.types.ts";
 
 // включение валидации вызовом enableValidation
 // все настройки передаются при вызове
@@ -147,7 +148,7 @@ const showAllCardsInfo = () => {
     });
 };
 
-const showInfoCard = (cardId: TCard["_id"]): void => {
+const showInfoCard: TShowInfoCard = (cardId) => {
   getCardList()
     .then((cards) => {
       const currentCard = cards.find((card) => card._id === cardId);
@@ -173,10 +174,10 @@ const showInfoCard = (cardId: TCard["_id"]): void => {
     });
 };
 
-const handlePreviewPicture = ({
+const handlePreviewPicture: THandlePreviewPicture = ({
   name,
   link,
-}: Pick<TCard, "name" | "link">): void => {
+}) => {
   imageElement.src = link;
   imageElement.alt = name;
   imageCaption.textContent = name;

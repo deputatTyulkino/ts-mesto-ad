@@ -1,5 +1,5 @@
 import { type AxiosResponse } from "axios";
-import type { TCard, TUser } from "../api.response.types.ts";
+import type { TCard, TUser } from "./api.response.types.ts";
 import { api } from "./config.ts";
 
 const getResponseData = <T>(res: AxiosResponse<T>): T => {
@@ -50,5 +50,5 @@ export const changeLikeCardStatus = async (
     method: isLiked ? "PUT" : "DELETE",
     url: `/cards/likes/${cardID}`,
   });
-  return getResponseData(res);
+  return getResponseData<TCard>(res);
 };
