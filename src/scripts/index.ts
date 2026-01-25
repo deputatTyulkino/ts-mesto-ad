@@ -37,7 +37,9 @@ import { validationSettings } from "./constants/global.constants.ts";
 import type { THandlePreviewPicture, TShowInfoCard } from "./index.types.ts";
 import type {
   TCardInfoTerms,
+  TCardsDescription,
   TCardStatisticsTerms,
+  TDescriptionValues,
 } from "./helpers/helpers.types.ts";
 
 // включение валидации вызовом enableValidation
