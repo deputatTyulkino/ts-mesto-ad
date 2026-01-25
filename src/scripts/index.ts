@@ -35,6 +35,10 @@ import { isAxiosError } from "axios";
 import type { TCard, TUser } from "./api/api.response.types.ts";
 import { validationSettings } from "./constants/global.constants.ts";
 import type { THandlePreviewPicture, TShowInfoCard } from "./index.types.ts";
+import type {
+  TCardInfoTerms,
+  TCardStatisticsTerms,
+} from "./helpers/helpers.types.ts";
 
 // включение валидации вызовом enableValidation
 // все настройки передаются при вызове
@@ -137,7 +141,11 @@ const showAllCardsInfo = () => {
       }
       titleModal.textContent = CardInfo.CARDS_STATISTICS.title;
       subtitleModal.textContent = CardInfo.CARDS_STATISTICS.subtitle;
-      ModalContent.appendInfoString(listInfo, terms, description);
+      ModalContent.appendInfoString<TCardStatisticsTerms, TCardsDescription>(
+        listInfo,
+        terms,
+        description,
+      );
       ModalContent.appendSecInfoString(secondaryListInfo, cards);
       openModalWindow(cardInfoModalWindow);
     })
@@ -152,8 +160,6 @@ const showInfoCard: TShowInfoCard = (cardId) => {
   getCardList()
     .then((cards) => {
       const currentCard = cards.find((card) => card._id === cardId);
-      const descriptions =
-        ModalDescriptionContent.createDescriptionValues(currentCard);
       const terms = CardInfo.INFO_CARD_TERMS;
       if (listInfo.textContent || secondaryListInfo.textContent) {
         listInfo.textContent = "";
@@ -163,8 +169,16 @@ const showInfoCard: TShowInfoCard = (cardId) => {
       }
       titleModal.textContent = CardInfo.INFO_CARD.title;
       subtitleModal.textContent = CardInfo.INFO_CARD.subtitle;
-      ModalContent.appendInfoString(listInfo, terms, descriptions);
-      ModalContent.appendUserLikes(secondaryListInfo, currentCard?.likes);
+      if (currentCard) {
+        const descriptions =
+          ModalDescriptionContent.createDescriptionValues(currentCard);
+        ModalContent.appendInfoString<TCardInfoTerms, TDescriptionValues>(
+          listInfo,
+          terms,
+          descriptions,
+        );
+        ModalContent.appendUserLikes(secondaryListInfo, currentCard?.likes);
+      }
       openModalWindow(cardInfoModalWindow);
     })
     .catch((err) => {
@@ -174,10 +188,7 @@ const showInfoCard: TShowInfoCard = (cardId) => {
     });
 };
 
-const handlePreviewPicture: THandlePreviewPicture = ({
-  name,
-  link,
-}) => {
+const handlePreviewPicture: THandlePreviewPicture = ({ name, link }) => {
   imageElement.src = link;
   imageElement.alt = name;
   imageCaption.textContent = name;

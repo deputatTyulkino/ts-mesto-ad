@@ -1,10 +1,25 @@
 import { getTemplateInfoString, getTemplateUserCardInfo } from "./template.ts";
-import { CardInfo, InfAboutCards } from './modal_inf.ts'
+import { CardInfo, InfAboutCards } from "./modal_inf.ts";
+import type { TCard } from "../api/api.response.types.ts";
+import { CardInfo as CI } from "../constants/card_info.ts";
+import type {
+  TypeOfDescriptionParams,
+  TypeOfTermsParams,
+} from "./helpers.types.ts";
 
 export class ModalContent {
-  static appendInfoString = (list, terms, descriptions) => {
+  static appendInfoString = <
+    T extends TypeOfTermsParams,
+    D extends TypeOfDescriptionParams,
+  >(
+    list: HTMLDListElement,
+    terms: T,
+    descriptions: D,
+  ) => {
     Object.entries(terms).forEach(([keyTerm, valueTerm]) => {
-      list.append(ModalCardInfo.createInfoString(valueTerm, descriptions[keyTerm]));
+      list.append(
+        ModalCardInfo.createInfoString(valueTerm, descriptions[keyTerm]),
+      );
     });
   };
 
@@ -15,19 +30,19 @@ export class ModalContent {
   };
 
   static appendSecInfoString = (list, cards) => {
-    const mostPopularCards = this._getPopularCards(cards)
+    const mostPopularCards = this.getPopularCards(cards);
     mostPopularCards.forEach((card) => {
-      list.append(ModalCardInfo.createSecInfoItem(card.name))
-    })
-  }
+      list.append(ModalCardInfo.createSecInfoItem(card.name));
+    });
+  };
 
-  static _getPopularCards = (cards) => {
+  private static getPopularCards = (cards) => {
     const sortedCards = [...cards].sort(
-      (card, nextCard) => card.likes.length - nextCard.likes.length
-    )
-    const fivePopularCards = sortedCards.slice(-5)
-    return fivePopularCards
-  }
+      (card, nextCard) => card.likes.length - nextCard.likes.length,
+    );
+    const fivePopularCards = sortedCards.slice(-5);
+    return fivePopularCards;
+  };
 }
 
 class ModalCardInfo {
@@ -47,7 +62,7 @@ class ModalCardInfo {
 }
 
 export class ModalDescriptionContent {
-  static createDescriptionValues = (card) => {
+  static createDescriptionValues = (card: TCard) => {
     return {
       countLikes: CardInfo.getCountLike(card.likes),
       owner: card.owner.name,
@@ -56,13 +71,13 @@ export class ModalDescriptionContent {
     };
   };
 
-  static createCardsDescriptionValues = (cards) => {
-    const { name, likes } = InfAboutCards.getUserMaxLikes(cards)
+  static createCardsDescriptionValues = (cards: TCard[]) => {
+    const { name, likes } = InfAboutCards.getUserMaxLikes(cards);
     return {
       countUsers: InfAboutCards.getCountUsers(cards),
       countLikes: InfAboutCards.getAllCountLikes(cards),
       maxLikesOnlyUser: likes,
       champOfLikes: name,
-    }
-  }
+    };
+  };
 }

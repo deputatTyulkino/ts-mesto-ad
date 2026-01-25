@@ -1,41 +1,57 @@
-export class CardInfo {
-  static getCountLike = (data) => data.length;
+import type { TCard, TUser } from "../api/api.response.types";
 
-  static formatDate = (date) => new Date(date).toLocaleDateString();
+export class CardInfo {
+  static getCountLike = (data: TCard["likes"]): number => data.length;
+  static formatDate = (date: string): string =>
+    new Date(date).toLocaleDateString();
 }
 
 export class InfAboutCards {
-  static getUserMaxLikes = (cards) => {
-    const cardsWithLikes = cards.filter(card => card.likes.length)
-    const cardsLikes = cardsWithLikes.flatMap(card => card.likes)
-    const userLikes = this._getUserLikesInfo(cardsLikes)
-    const userLikesInf = Object.values(userLikes)
-    return userLikesInf.reduce((acc, user) => {
-      return acc.likes > user.likes ? acc : user
-    }, userLikesInf.at(0))
-  }
+  static getUserMaxLikes = (cards: TCard[]) => {
+    const cardsWithLikes = cards.filter((card) => card.likes.length);
+    const cardsLikes = cardsWithLikes.flatMap(
+      (card) => card.likes,
+    ) satisfies TUser[];
+    const userLikes = this.getUserLikesInfo(cardsLikes) satisfies Record<
+      string,
+      { name: string; likes: number }
+    >;
+    const userLikesInf = Object.values(userLikes) satisfies {
+      name: string;
+      likes: number;
+    }[];
+    return userLikesInf.reduce(
+      (acc, user) => {
+        return acc.likes > user.likes ? acc : user;
+      },
+      userLikesInf.at(0) as { name: string; likes: number },
+    );
+  };
 
-  static getCountUsers = (cards) => {
-    const arrayUsersId = cards.map((card) => card.owner['_id'])
-    return new Set(arrayUsersId).size
-  }
+  static getCountUsers = (cards: TCard[]): number => {
+    const arrayUsersId = cards.map((card) => card.owner["_id"]);
+    return new Set(arrayUsersId).size;
+  };
 
-  static getAllCountLikes = (cards) => {
-    return cards.reduce((acc, card) => acc += card.likes.length, 0)
-  }
+  static getAllCountLikes = (cards: TCard[]): number => {
+    return cards.reduce((acc, card) => (acc += card.likes.length), 0);
+  };
 
-  static _getUserLikesInfo = (data) => {
-    return data.reduce((acc, user) => {
-      if (acc[user._id]) {
-        acc[user._id].likes += 1
-        return acc
-      } else {
-        acc[user._id] = {
-          name: user.name,
-          likes: 1
+  private static getUserLikesInfo = (data: TUser[]) => {
+    return data.reduce(
+      (acc, user) => {
+        if (acc[user._id]) {
+          acc[user._id].likes += 1;
+          return acc;
+        } else {
+          acc[user._id] = {
+            name: user.name,
+            likes: 1,
+          };
+          return acc;
         }
-        return acc
-      }
-    }, {})
-  }
+      },
+      {} as Record<string, { name: string; likes: number }>,
+    );
+  };
 }
