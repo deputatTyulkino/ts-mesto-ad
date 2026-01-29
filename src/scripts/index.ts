@@ -179,7 +179,7 @@ const showInfoCard: TShowInfoCard = (cardId) => {
           terms,
           descriptions,
         );
-        ModalContent.appendUserLikes(secondaryListInfo, currentCard?.likes);
+        ModalContent.appendUserLikes(secondaryListInfo, currentCard.likes);
       }
       openModalWindow(cardInfoModalWindow);
     })

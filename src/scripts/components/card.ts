@@ -65,7 +65,7 @@ export const createCardElement: TCreateCardElement = (
   (
     cardElement.querySelector(".card__title") as HTMLHeadingElement
   ).textContent = data.name;
-  countLike.textContent = CardInfo.getCountLike(data.likes);
+  countLike.textContent = String(CardInfo.getCountLike(data.likes));
 
   const userLikes = data.likes.map((user) => user._id);
   if (userLikes.includes(ownerId)) {
@@ -78,7 +78,7 @@ export const createCardElement: TCreateCardElement = (
     likeButton.disabled = true;
     likeCard(likeButton, data._id)
       .then((response) => {
-        countLike.textContent = CardInfo.getCountLike(response.likes);
+        countLike.textContent = String(CardInfo.getCountLike(response.likes));
       })
       .catch((err) => {
         console.log(err);

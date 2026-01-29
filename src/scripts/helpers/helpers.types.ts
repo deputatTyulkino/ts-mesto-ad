@@ -22,3 +22,14 @@ export type TDescriptionValues = ReturnType<
 >;
 
 export type TypeOfDescriptionParams = TDescriptionValues | TCardsDescription;
+
+export const isCardInfoTerms = (
+  desc: TypeOfDescriptionParams,
+): desc is TDescriptionValues => {
+  return (
+    "countLikes" in desc &&
+    "owner" in desc &&
+    "createdAt" in desc &&
+    "name" in desc
+  );
+};

@@ -1,10 +1,12 @@
 import { getTemplateInfoString, getTemplateUserCardInfo } from "./template.ts";
 import { CardInfo, InfAboutCards } from "./modal_inf.ts";
-import type { TCard } from "../api/api.response.types.ts";
-import { CardInfo as CI } from "../constants/card_info.ts";
-import type {
-  TypeOfDescriptionParams,
-  TypeOfTermsParams,
+import type { TCard, TUser } from "../api/api.response.types.ts";
+import {
+  isCardInfoTerms,
+  type TCardInfoTerms,
+  type TCardStatisticsTerms,
+  type TypeOfDescriptionParams,
+  type TypeOfTermsParams,
 } from "./helpers.types.ts";
 
 export class ModalContent {
@@ -15,28 +17,39 @@ export class ModalContent {
     list: HTMLDListElement,
     terms: T,
     descriptions: D,
-  ) => {
+  ): void => {
     Object.entries(terms).forEach(([keyTerm, valueTerm]) => {
-      list.append(
-        ModalCardInfo.createInfoString(valueTerm, descriptions[keyTerm]),
-      );
+      if (isCardInfoTerms(descriptions)) {
+        const value = descriptions[keyTerm as keyof TCardInfoTerms];
+        list.append(
+          ModalCardInfo.createInfoString<typeof value>(valueTerm, value),
+        );
+      } else {
+        const value = descriptions[keyTerm as keyof TCardStatisticsTerms];
+        list.append(
+          ModalCardInfo.createInfoString<typeof value>(valueTerm, value),
+        );
+      }
     });
   };
 
-  static appendUserLikes = (list, users) => {
+  static appendUserLikes = (list: HTMLUListElement, users: TUser[]): void => {
     users.forEach((user) => {
       list.append(ModalCardInfo.createSecInfoItem(user.name));
     });
   };
 
-  static appendSecInfoString = (list, cards) => {
+  static appendSecInfoString = (
+    list: HTMLUListElement,
+    cards: TCard[],
+  ): void => {
     const mostPopularCards = this.getPopularCards(cards);
     mostPopularCards.forEach((card) => {
       list.append(ModalCardInfo.createSecInfoItem(card.name));
     });
   };
 
-  private static getPopularCards = (cards) => {
+  private static getPopularCards = (cards: TCard[]): TCard[] => {
     const sortedCards = [...cards].sort(
       (card, nextCard) => card.likes.length - nextCard.likes.length,
     );
@@ -46,18 +59,28 @@ export class ModalContent {
 }
 
 class ModalCardInfo {
-  static createInfoString = (term, description) => {
+  static createInfoString = <T extends string | number>(
+    term: string,
+    description: T,
+  ) => {
     const infoString = getTemplateInfoString();
-    infoString.querySelector(".popup__info-term").textContent = term;
-    infoString.querySelector(".popup__info-description").textContent =
-      description;
+    const termElement = infoString.querySelector(
+      ".popup__info-term",
+    ) as HTMLElement;
+    const descriptionElement = infoString.querySelector(
+      ".popup__info-description",
+    ) as HTMLElement;
+    if (termElement && descriptionElement) {
+      termElement.textContent = term;
+      descriptionElement.textContent = String(description);
+    }
     return infoString;
   };
 
-  static createSecInfoItem = (name) => {
+  static createSecInfoItem = (name: string) => {
     const userTemplate = getTemplateUserCardInfo();
     userTemplate.textContent = name;
-    return userTemplate;
+    return userTemplate satisfies HTMLLIElement;
   };
 }
 
